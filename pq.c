@@ -72,18 +72,23 @@ struct pq_t *pqAlloc(){
 int pqInit(struct pq_t *pThis, size_t keySize, size_t objSize, size_t cap, int (*cmp)(const void*, const void*)){
     if(cap != 0){
         pThis->dynamic = 0;
-        pThis->keySize = keySize;
-        pThis->objSize = objSize;
-        pThis->size = 0;
         pThis->cap = cap;
-        pThis->keyArray = malloc(cap * keySize);
-        pThis->objArray = malloc(cap * objSize);
-        pThis->pObjToIndex = hmAlloc();
-        pThis->cmp = cmp;
-        hmInit(pThis->pObjToIndex, objSize, sizeof(size_t));
-        if(pThis->keyArray == NULL || pThis->objArray == NULL || pThis->pObjToIndex == NULL)
-            return __DS__PQ__OUT_OF_MEM__;
     }
+    else
+    {
+        pThis->dynamic = 1;
+        pThis->cap = 4;
+    }
+    pThis->keySize = keySize;
+    pThis->objSize = objSize;
+    pThis->size = 0;
+    pThis->keyArray = malloc(pThis->cap * keySize);
+    pThis->objArray = malloc(pThis->cap * objSize);
+    pThis->pObjToIndex = hmAlloc();
+    pThis->cmp = cmp;
+    hmInit(pThis->pObjToIndex, objSize, sizeof(size_t));
+    if(pThis->keyArray == NULL || pThis->objArray == NULL || pThis->pObjToIndex == NULL)
+        return __DS__PQ__OUT_OF_MEM__;
     return __DS__PQ__NORMAL__;
 }
 
