@@ -22,8 +22,8 @@ int hmDelete(struct hm_t *pThis, void *pKey);
 int hmGet(struct hm_t *pThis, void *pKey, void *pRetVal);
 int hmSet(struct hm_t *pThis, void *pKey, void *pNewVal);
 int hmKeyExist(struct hm_t *pThis, void *pKey);
-/* Hash Map spec end */
 void hmDebug(struct hm_t*);
+/* Hash Map spec end */
 
 inline char* getAddr(void *array, int i, size_t tSize){
 	return array+i*tSize;
@@ -208,7 +208,7 @@ int pqUnion(struct pq_t *pThis1, struct pq_t *pThis2){
     }
     pThis1->size += pThis2->size;
     return __DS__PQ__NORMAL__;
-        
+
 }
 
 /* bonus2 */
@@ -403,7 +403,7 @@ int hmDelete(struct hm_t *pThis, void *pKey){
             return __DS__HM__OUT_OF_MEM__;
 
     return __DS__HM__NORMAL__;
-    
+
 }
 int hmGet(struct hm_t *pThis, void *pKey, void *pRetVal){
     int i = hmFindKey(pThis, pKey);
