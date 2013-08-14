@@ -37,14 +37,41 @@ inline void putItem(void *array, int i, const void* pRet, size_t tSize){
 
 /* Very Slow Priority Queue implementation */
 struct pq_t{
-    void *keyArray;
-    void *objArray;
+    struct node *keyMax;
     size_t keySize, objSize, size, cap;
     struct hm_t *pObjToIndex;
     int (*cmp)(const void*, const void*);
     int dynamic;
 };
 
+/* node struct */
+struct node{
+    struct node * left, right, parent;
+    void * key;
+    void * obj;
+    size_t grade;
+};
+
+inline void *newNode(void *key, size_t keySize, void *obj, size_t objSize){
+    void *new = malloc(sizeof(node));
+    memcpy(new->key, key, keySize);
+    memcpy(new->obj, obj, objSize);
+    new->left = NULL;
+    new->right = NULL;
+    new->parent = NULL;
+    new->grade = 1;
+    return new;
+}
+
+void destory(void *root){
+    if (root->left != NULL)
+        destory(root->left);
+    if (root->right != NULL)
+        destory(root->right);
+    free(root->key);
+    free(root->obj);
+    free(root);
+}
 /*
 void pqDebug(struct pq_t* pThis){
     printf("size/cap: %zu/%zu\nkey,obj size: %zu, %zu\n", pThis->size, pThis->cap, pThis->keySize, pThis->objSize);
@@ -79,15 +106,14 @@ int pqInit(struct pq_t *pThis, size_t keySize, size_t objSize, size_t cap, int (
         pThis->dynamic = 1;
         pThis->cap = 4;
     }
+    pThis->keyMax = NULL;
     pThis->keySize = keySize;
     pThis->objSize = objSize;
     pThis->size = 0;
-    pThis->keyArray = malloc(pThis->cap * keySize);
-    pThis->objArray = malloc(pThis->cap * objSize);
     pThis->pObjToIndex = hmAlloc();
     pThis->cmp = cmp;
     hmInit(pThis->pObjToIndex, objSize, sizeof(size_t));
-    if(pThis->keyArray == NULL || pThis->objArray == NULL || pThis->pObjToIndex == NULL)
+    if(pThis->keyArray == NULL || pThis->pObjToIndex == NULL)
         return __DS__PQ__OUT_OF_MEM__;
     return __DS__PQ__NORMAL__;
 }
@@ -95,10 +121,8 @@ int pqInit(struct pq_t *pThis, size_t keySize, size_t objSize, size_t cap, int (
 int pqFree(struct pq_t *pThis){
     if(pThis->pObjToIndex != NULL)
         hmFree(pThis->pObjToIndex);
-    if(pThis->keyArray != NULL)
-        free(pThis->keyArray);
-    if(pThis->objArray != NULL)
-        free(pThis->objArray);
+    if (pThis->keyMax != NULL)
+        destory(pThis->keyMax);
     free(pThis);
 }
 
@@ -120,12 +144,18 @@ int pqEmpty(struct pq_t *pThis){
 
 int pqInsert(struct pq_t *pThis, void *pKey, void *pObj){
     if(pThis->size == pThis->cap)
-        return __DS__PQ__FULL__;
+    {
+        if (pThis->dynamic)
+            pThis->cap *= 2;
+        else
+            return __DS__PQ__FULL__;
+    }
     if(hmKeyExist(pThis->pObjToIndex, pObj))
         return __DS__PQ__OBJ_EXIST__;
-
-    putItem(pThis->keyArray, pThis->size, pKey, pThis->keySize);
-    putItem(pThis->objArray, pThis->size, pObj, pThis->objSize);
+    if (pThis->size == 0){
+        pThis->keyMax = newNode(pKey, pThis->keySize, pObj, pThis->objSize);
+    }
+    pqUnion(pThis->keyMax, newNode(pKey, pThis->keySize));
     hmInsert(pThis->pObjToIndex, pObj, &(pThis->size));
     pThis->size++;
     return __DS__PQ__NORMAL__;
@@ -133,29 +163,15 @@ int pqInsert(struct pq_t *pThis, void *pKey, void *pObj){
 int pqExtractMax(struct pq_t *pThis, void *pRetKey, void *pRetObj){
     if(pThis->size == 0)
         return __DS__PQ__EMPTY__;
-    void *max = pThis->keyArray, *iter;
-    size_t max_i = 0, i;
-    for(i=1; i<pThis->size; i++){
-        /* find max */
-        iter = getAddr(pThis->keyArray, i, pThis->keySize);
-        if((*(pThis->cmp))(max, iter) < 0){
-            max = iter;
-            max_i = i;
-        }
-    }
-    getItem(pThis->keyArray, max_i, pRetKey, pThis->keySize);
-    getItem(pThis->objArray, max_i, pRetObj, pThis->objSize);
-
-    for(i=max_i; i<pThis->size-1; i++){
-        void *iter1 = getAddr(pThis->keyArray, i, pThis->keySize);
-        void *iter2 = getAddr(pThis->keyArray, i+1, pThis->keySize);
-        memcpy(iter1, iter2, pThis->keySize);
-        iter1 = getAddr(pThis->objArray, i, pThis->objSize);
-        iter2 = getAddr(pThis->objArray, i+1, pThis->objSize);
-        memcpy(iter1, iter2, pThis->objSize);
-        hmSet(pThis->pObjToIndex, iter1, &i);
-    }
-    hmDelete(pThis->pObjToIndex, pRetObj);
+    memcpy(pRetKey, pThis->keyMax->key, pThis->keySize);
+    memcpy(pRetObj, pThis->keyMax->obj, pThis->objSize);
+    hmDelete(pThis->pObjToIndex, pThis->keyMax);
+    void *left = pThis->keyMax->left, right = pThis->keyMax->right;
+    free(pThis->keyMax->key);
+    free(pThis->keyMax->obj);
+    free(pThis->keyMax);
+    pThis->keyMax = left;
+    pqUnion(left, right);
     pThis->size--;
     return __DS__PQ__NORMAL__;
 }
@@ -163,19 +179,8 @@ int pqExtractMax(struct pq_t *pThis, void *pRetKey, void *pRetObj){
 int pqMax(struct pq_t *pThis, void *pRetKey, void *pRetObj){
     if(pThis->size == 0)
         return __DS__PQ__EMPTY__;
-    void *max = pThis->keyArray, *iter;
-    size_t max_i = 0, i;
-    for(i=1; i<pThis->size; i++){
-        /* find max */
-        iter = getAddr(pThis->keyArray, i, pThis->keySize);
-        if((*(pThis->cmp))(max, iter) < 0){
-            max = iter;
-            max_i = i;
-        }
-    }
-    getItem(pThis->keyArray, max_i, pRetKey, pThis->keySize);
-    getItem(pThis->objArray, max_i, pRetObj, pThis->objSize);
-
+    memcpy(pRetKey, pThis->keyMax->key, pThis->keySize);
+    memcpy(pRetObj, pThis->keyMax->obj, pThis->objSize);
     return __DS__PQ__NORMAL__;
 }
 
@@ -187,13 +192,15 @@ int pqUnion(struct pq_t *pThis1, struct pq_t *pThis2){
         return __DS__PQ__DIFF_SIZE__;
     if(!pThis1->dynamic && (pThis1->size + pThis2->size > pThis1->cap))
         return __DS__PQ__FULL__;
-
+    while ( pThis1->cap < (pThis1->size+pThis2->size))
+        pThis1->cap *= 2;
+    /*
     size_t size = pThis1->size;
     size_t i;
     for(i=0; i<pThis2->size; i++){
         void *pObj = getAddr(pThis2->objArray, i, pThis2->objSize);
         size_t newIndex = i+size;
-        if(hmInsert(pThis1->pObjToIndex, pObj, &newIndex) == __DS__HM__KEY_EXIST__){
+        if(hmInsert(pThis1->pObjToIndex, pObj, &newIndex)== __DS__HM__KEY_EXIST__){
             size_t j;
             for(j=0; j<i; j++){
                 pObj = getAddr(pThis2->objArray, j, pThis2->objSize);
@@ -211,6 +218,46 @@ int pqUnion(struct pq_t *pThis1, struct pq_t *pThis2){
         memcpy(pNewObj, pObj, pThis1->objSize);
         memcpy(pNewKey, pKey, pThis1->keySize);
     }
+    */
+    void *pq, *itr;
+    if (pThis1->cmp(pThis1->keyMax->key, pThis2->keyMax->key)>=0)
+    {
+        pq = pThis1->keyMax;
+    }
+    else
+    {
+        pq = pThis2->keyMax;
+    }
+    while (1)
+    {
+        if (pThis1->cmp(pThis1->keyMax->key, pThis2->keyMax->key)>=0)
+        {
+            itr =  pThis1->keyMax;
+            if (itr->right == NULL)
+            {
+                itr->right = pThis2->keyMax;
+                break;
+            }
+            else
+            {
+                pThis1->keyMax = irt->right;
+            }
+        }
+        else
+        {
+            itr = pThis2->keyMax;
+            if (itr->right == NULL)
+            {
+                itr->right = pThis1->keyMax;
+                break;
+            }
+            else
+            {
+                pThis2->keyMax = itr->right;
+            }
+        }
+    }
+    pThis1->keyMax = pq;
     pThis1->size += pThis2->size;
     return __DS__PQ__NORMAL__;
 
