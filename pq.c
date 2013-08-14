@@ -46,16 +46,20 @@ struct pq_t{
 
 /* node struct */
 struct node{
-    struct node * left, right, parent;
+    struct node * left;
+    struct node * right;
+    struct node * parent;
     void * key;
     void * obj;
     size_t grade;
 };
 
-inline void *newNode(void *key, size_t keySize, void *obj, size_t objSize){
-    void *new = malloc(sizeof(node));
-    memcpy(new->key, key, keySize);
-    memcpy(new->obj, obj, objSize);
+struct node * newNode(void *keyIn, size_t keySize, void *objIn, size_t objSize){
+    struct node* new = malloc(sizeof(struct node));
+    new->key = malloc(keySize);
+    new->obj = malloc(objSize);
+    memcpy(new->key, keyIn, keySize);
+    memcpy(new->obj, objIn, objSize);
     new->left = NULL;
     new->right = NULL;
     new->parent = NULL;
@@ -63,7 +67,48 @@ inline void *newNode(void *key, size_t keySize, void *obj, size_t objSize){
     return new;
 }
 
-void destory(void *root){
+struct node *treeUnion(struct node* pThis1, struct node *pThis2, struct pq_t* pq_t){
+    struct node *pq, *itr;
+    if (pq_t->cmp(pThis1->key, pThis2->key)>=0)
+    {
+        pq = pThis1;
+    }
+    else
+    {
+        pq = pThis2;
+    }
+    while (1)
+    {
+        if (pq_t->cmp(pThis1->key, pThis2->key)>=0)
+        {
+            itr =  pThis1;
+            if (itr->right == NULL)
+            {
+                itr->right = pThis2;
+                break;
+            }
+            else
+            {
+                pThis1 = itr->right;
+            }
+        }
+        else
+        {
+            itr = pThis2;
+            if (itr->right == NULL)
+            {
+                itr->right = pThis1;
+                break;
+            }
+            else
+            {
+                pThis2 = itr->right;
+            }
+        }
+    }
+    return pq;
+}
+void destory(struct node *root){
     if (root->left != NULL)
         destory(root->left);
     if (root->right != NULL)
@@ -113,8 +158,6 @@ int pqInit(struct pq_t *pThis, size_t keySize, size_t objSize, size_t cap, int (
     pThis->pObjToIndex = hmAlloc();
     pThis->cmp = cmp;
     hmInit(pThis->pObjToIndex, objSize, sizeof(size_t));
-    if(pThis->keyArray == NULL || pThis->pObjToIndex == NULL)
-        return __DS__PQ__OUT_OF_MEM__;
     return __DS__PQ__NORMAL__;
 }
 
@@ -154,8 +197,12 @@ int pqInsert(struct pq_t *pThis, void *pKey, void *pObj){
         return __DS__PQ__OBJ_EXIST__;
     if (pThis->size == 0){
         pThis->keyMax = newNode(pKey, pThis->keySize, pObj, pThis->objSize);
+        pThis->size++;
+        return __DS__PQ__NORMAL__;
     }
-    pqUnion(pThis->keyMax, newNode(pKey, pThis->keySize));
+    struct node * new;
+    new =  newNode(pKey, pThis->keySize, pObj, pThis->objSize);
+    pThis->keyMax = treeUnion(pThis->keyMax, new, pThis);
     hmInsert(pThis->pObjToIndex, pObj, &(pThis->size));
     pThis->size++;
     return __DS__PQ__NORMAL__;
@@ -166,12 +213,13 @@ int pqExtractMax(struct pq_t *pThis, void *pRetKey, void *pRetObj){
     memcpy(pRetKey, pThis->keyMax->key, pThis->keySize);
     memcpy(pRetObj, pThis->keyMax->obj, pThis->objSize);
     hmDelete(pThis->pObjToIndex, pThis->keyMax);
-    void *left = pThis->keyMax->left, right = pThis->keyMax->right;
+    struct node *left = pThis->keyMax->left;
+    struct node *right = pThis->keyMax->right;
     free(pThis->keyMax->key);
     free(pThis->keyMax->obj);
     free(pThis->keyMax);
     pThis->keyMax = left;
-    pqUnion(left, right);
+    treeUnion(left, right, pThis);
     pThis->size--;
     return __DS__PQ__NORMAL__;
 }
@@ -219,7 +267,7 @@ int pqUnion(struct pq_t *pThis1, struct pq_t *pThis2){
         memcpy(pNewKey, pKey, pThis1->keySize);
     }
     */
-    void *pq, *itr;
+    struct node *pq, *itr;
     if (pThis1->cmp(pThis1->keyMax->key, pThis2->keyMax->key)>=0)
     {
         pq = pThis1->keyMax;
@@ -240,7 +288,7 @@ int pqUnion(struct pq_t *pThis1, struct pq_t *pThis2){
             }
             else
             {
-                pThis1->keyMax = irt->right;
+                pThis1->keyMax = itr->right;
             }
         }
         else
@@ -265,12 +313,13 @@ int pqUnion(struct pq_t *pThis1, struct pq_t *pThis2){
 
 /* bonus2 */
 int pqExtractMin(struct pq_t *pThis, void *pRetKey, void *pRetObj){
+  /*
     if(pThis->size == 0)
         return __DS__PQ__EMPTY__;
     void *min = pThis->keyArray, *iter;
     size_t min_i = 0, i;
     for(i=1; i<pThis->size; i++){
-        /* find min */
+
         iter = getAddr(pThis->keyArray, i, pThis->keySize);
         if((*(pThis->cmp))(min, iter) > 0){
             min = iter;
@@ -291,15 +340,17 @@ int pqExtractMin(struct pq_t *pThis, void *pRetKey, void *pRetObj){
     }
     hmDelete(pThis->pObjToIndex, pRetObj);
     pThis->size--;
+    */
     return __DS__PQ__NORMAL__;
 }
 int pqMin(struct pq_t *pThis, void *pRetKey, void *pRetObj){
+  /*
     if(pThis->size == 0)
         return __DS__PQ__EMPTY__;
     void *min = pThis->keyArray, *iter;
     size_t min_i = 0, i;
     for(i=1; i<pThis->size; i++){
-        /* find min */
+
         iter = getAddr(pThis->keyArray, i, pThis->keySize);
         if((*(pThis->cmp))(min, iter) > 0){
             min = iter;
@@ -309,23 +360,28 @@ int pqMin(struct pq_t *pThis, void *pRetKey, void *pRetObj){
     getItem(pThis->keyArray, min_i, pRetKey, pThis->keySize);
     getItem(pThis->objArray, min_i, pRetObj, pThis->objSize);
 
+    */
     return __DS__PQ__NORMAL__;
 }
 
 /* bonus3 */
 int pqGetKey(struct pq_t *pThis, void *pObj, void *pRetKey){
+  /*
     size_t index;
     if(hmGet(pThis->pObjToIndex, pObj, &index) == __DS__HM__KEY_NOT_EXIST__ )
         return __DS__PQ__OBJ_NOT_EXIST__;
     getItem(pThis->keyArray, index, pRetKey, pThis->keySize);
+    */
     return __DS__PQ__NORMAL__;
 }
 
 int pqChangeKey(struct pq_t *pThis, void *pObj, void *pNewKey){
+  /*
     size_t index;
     if(hmGet(pThis->pObjToIndex, pObj, &index) == __DS__HM__KEY_NOT_EXIST__)
         return __DS__PQ__OBJ_NOT_EXIST__;
     putItem(pThis->keyArray, index, pNewKey, pThis->keySize);
+    */
     return __DS__PQ__NORMAL__;
 }
 
