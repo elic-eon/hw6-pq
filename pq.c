@@ -37,7 +37,7 @@ inline void putItem(void *array, int i, const void* pRet, size_t tSize){
 
 /* Very Slow Priority Queue implementation */
 struct pq_t{
-    struct node *keyMax;
+    struct node *root;
     size_t keySize, objSize, size, cap;
     struct hm_t *pObjToIndex;
     int (*cmp)(const void*, const void*);
@@ -46,11 +46,11 @@ struct pq_t{
 
 /* node struct */
 struct node{
-    struct node * left;
-    struct node * right;
-    struct node * parent;
-    void * key;
-    void * obj;
+    struct node *left;
+    struct node *right;
+    struct node *parent;
+    void *key;
+    void *obj;
     size_t grade;
 };
 
@@ -85,6 +85,8 @@ struct node *treeUnion(struct node* pThis1, struct node *pThis2, struct pq_t* pq
             if (itr->right == NULL)
             {
                 itr->right = pThis2;
+                pThis2->parent = itr;
+                itr = itr->right;
                 break;
             }
             else
@@ -98,11 +100,31 @@ struct node *treeUnion(struct node* pThis1, struct node *pThis2, struct pq_t* pq
             if (itr->right == NULL)
             {
                 itr->right = pThis1;
+                pThis1->parent = itr;
+                itr = itr->right;
                 break;
             }
             else
             {
                 pThis2 = itr->right;
+            }
+        }
+    }
+    while (itr->parent != NULL)
+    {
+        itr = itr->parent;
+        if (itr->left==NULL)
+        {
+            itr->left = itr->right;
+            itr->right = NULL;
+        }
+        else
+        {
+            if (itr->left->grade < itr->right->grade)
+            {
+                void *temp = itr->right;
+                itr->right = itr->left;
+                itr->left = temp;
             }
         }
     }
@@ -151,7 +173,7 @@ int pqInit(struct pq_t *pThis, size_t keySize, size_t objSize, size_t cap, int (
         pThis->dynamic = 1;
         pThis->cap = 4;
     }
-    pThis->keyMax = NULL;
+    pThis->root = NULL;
     pThis->keySize = keySize;
     pThis->objSize = objSize;
     pThis->size = 0;
@@ -164,8 +186,8 @@ int pqInit(struct pq_t *pThis, size_t keySize, size_t objSize, size_t cap, int (
 int pqFree(struct pq_t *pThis){
     if(pThis->pObjToIndex != NULL)
         hmFree(pThis->pObjToIndex);
-    if (pThis->keyMax != NULL)
-        destory(pThis->keyMax);
+    if (pThis->root != NULL)
+        destory(pThis->root);
     free(pThis);
 }
 
@@ -196,13 +218,13 @@ int pqInsert(struct pq_t *pThis, void *pKey, void *pObj){
     if(hmKeyExist(pThis->pObjToIndex, pObj))
         return __DS__PQ__OBJ_EXIST__;
     if (pThis->size == 0){
-        pThis->keyMax = newNode(pKey, pThis->keySize, pObj, pThis->objSize);
+        pThis->root = newNode(pKey, pThis->keySize, pObj, pThis->objSize);
         pThis->size++;
         return __DS__PQ__NORMAL__;
     }
     struct node * new;
     new =  newNode(pKey, pThis->keySize, pObj, pThis->objSize);
-    pThis->keyMax = treeUnion(pThis->keyMax, new, pThis);
+    pThis->root = treeUnion(pThis->root, new, pThis);
     hmInsert(pThis->pObjToIndex, pObj, &(pThis->size));
     pThis->size++;
     return __DS__PQ__NORMAL__;
@@ -210,16 +232,15 @@ int pqInsert(struct pq_t *pThis, void *pKey, void *pObj){
 int pqExtractMax(struct pq_t *pThis, void *pRetKey, void *pRetObj){
     if(pThis->size == 0)
         return __DS__PQ__EMPTY__;
-    memcpy(pRetKey, pThis->keyMax->key, pThis->keySize);
-    memcpy(pRetObj, pThis->keyMax->obj, pThis->objSize);
-    hmDelete(pThis->pObjToIndex, pThis->keyMax);
-    struct node *left = pThis->keyMax->left;
-    struct node *right = pThis->keyMax->right;
-    free(pThis->keyMax->key);
-    free(pThis->keyMax->obj);
-    free(pThis->keyMax);
-    pThis->keyMax = left;
-    treeUnion(left, right, pThis);
+    memcpy(pRetKey, pThis->root->key, pThis->keySize);
+    memcpy(pRetObj, pThis->root->obj, pThis->objSize);
+    hmDelete(pThis->pObjToIndex, pThis->root);
+    struct node *left = pThis->root->left;
+    struct node *right = pThis->root->right;
+    free(pThis->root->key);
+    free(pThis->root->obj);
+    free(pThis->root);
+    pThis->root = treeUnion(left, right, pThis);
     pThis->size--;
     return __DS__PQ__NORMAL__;
 }
@@ -227,8 +248,8 @@ int pqExtractMax(struct pq_t *pThis, void *pRetKey, void *pRetObj){
 int pqMax(struct pq_t *pThis, void *pRetKey, void *pRetObj){
     if(pThis->size == 0)
         return __DS__PQ__EMPTY__;
-    memcpy(pRetKey, pThis->keyMax->key, pThis->keySize);
-    memcpy(pRetObj, pThis->keyMax->obj, pThis->objSize);
+    memcpy(pRetKey, pThis->root->key, pThis->keySize);
+    memcpy(pRetObj, pThis->root->obj, pThis->objSize);
     return __DS__PQ__NORMAL__;
 }
 
@@ -268,44 +289,44 @@ int pqUnion(struct pq_t *pThis1, struct pq_t *pThis2){
     }
     */
     struct node *pq, *itr;
-    if (pThis1->cmp(pThis1->keyMax->key, pThis2->keyMax->key)>=0)
+    if (pThis1->cmp(pThis1->root->key, pThis2->root->key)>=0)
     {
-        pq = pThis1->keyMax;
+        pq = pThis1->root;
     }
     else
     {
-        pq = pThis2->keyMax;
+        pq = pThis2->root;
     }
     while (1)
     {
-        if (pThis1->cmp(pThis1->keyMax->key, pThis2->keyMax->key)>=0)
+        if (pThis1->cmp(pThis1->root->key, pThis2->root->key)>=0)
         {
-            itr =  pThis1->keyMax;
+            itr =  pThis1->root;
             if (itr->right == NULL)
             {
-                itr->right = pThis2->keyMax;
+                itr->right = pThis2->root;
                 break;
             }
             else
             {
-                pThis1->keyMax = itr->right;
+                pThis1->root = itr->right;
             }
         }
         else
         {
-            itr = pThis2->keyMax;
+            itr = pThis2->root;
             if (itr->right == NULL)
             {
-                itr->right = pThis1->keyMax;
+                itr->right = pThis1->root;
                 break;
             }
             else
             {
-                pThis2->keyMax = itr->right;
+                pThis2->root = itr->right;
             }
         }
     }
-    pThis1->keyMax = pq;
+    pThis1->root = pq;
     pThis1->size += pThis2->size;
     return __DS__PQ__NORMAL__;
 
