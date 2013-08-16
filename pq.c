@@ -85,6 +85,7 @@ struct node *treeUnion(struct node* pThis1, struct node *pThis2, struct pq_t* pq
             if (itr->right == NULL)
             {
                 itr->right = pThis2;
+                itr->grade = pThis2->grade+1;
                 pThis2->parent = itr;
                 itr = itr->right;
                 break;
@@ -100,6 +101,7 @@ struct node *treeUnion(struct node* pThis1, struct node *pThis2, struct pq_t* pq
             if (itr->right == NULL)
             {
                 itr->right = pThis1;
+                itr->grade = pThis1->grade+1;
                 pThis1->parent = itr;
                 itr = itr->right;
                 break;
@@ -110,6 +112,8 @@ struct node *treeUnion(struct node* pThis1, struct node *pThis2, struct pq_t* pq
             }
         }
     }
+    while (itr->right != NULL)
+        itr = itr->right;
     while (itr->parent != NULL)
     {
         itr = itr->parent;
@@ -117,6 +121,7 @@ struct node *treeUnion(struct node* pThis1, struct node *pThis2, struct pq_t* pq
         {
             itr->left = itr->right;
             itr->right = NULL;
+            itr->grade = 1;
         }
         else
         {
@@ -124,6 +129,7 @@ struct node *treeUnion(struct node* pThis1, struct node *pThis2, struct pq_t* pq
             {
                 void *temp = itr->right;
                 itr->right = itr->left;
+                itr->grade = itr->right->grade+1;
                 itr->left = temp;
             }
         }
@@ -240,7 +246,18 @@ int pqExtractMax(struct pq_t *pThis, void *pRetKey, void *pRetObj){
     free(pThis->root->key);
     free(pThis->root->obj);
     free(pThis->root);
-    pThis->root = treeUnion(left, right, pThis);
+    if (right == NULL){
+        if (left == NULL){
+            pThis->size--;
+            return __DS__PQ__NORMAL__;
+        }
+        pThis->root = left;
+    }
+    else{
+        right->parent = NULL;
+        left->parent = NULL;
+        pThis->root = treeUnion(left, right, pThis);
+    }
     pThis->size--;
     return __DS__PQ__NORMAL__;
 }
@@ -288,45 +305,7 @@ int pqUnion(struct pq_t *pThis1, struct pq_t *pThis2){
         memcpy(pNewKey, pKey, pThis1->keySize);
     }
     */
-    struct node *pq, *itr;
-    if (pThis1->cmp(pThis1->root->key, pThis2->root->key)>=0)
-    {
-        pq = pThis1->root;
-    }
-    else
-    {
-        pq = pThis2->root;
-    }
-    while (1)
-    {
-        if (pThis1->cmp(pThis1->root->key, pThis2->root->key)>=0)
-        {
-            itr =  pThis1->root;
-            if (itr->right == NULL)
-            {
-                itr->right = pThis2->root;
-                break;
-            }
-            else
-            {
-                pThis1->root = itr->right;
-            }
-        }
-        else
-        {
-            itr = pThis2->root;
-            if (itr->right == NULL)
-            {
-                itr->right = pThis1->root;
-                break;
-            }
-            else
-            {
-                pThis2->root = itr->right;
-            }
-        }
-    }
-    pThis1->root = pq;
+    pThis1->root = treeUnion(pThis1->root, pThis2->root, pThis1);
     pThis1->size += pThis2->size;
     return __DS__PQ__NORMAL__;
 
