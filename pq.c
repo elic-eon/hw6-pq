@@ -68,8 +68,8 @@ struct node * newNode(void *keyIn, size_t keySize, void *objIn, size_t objSize){
 }
 
 struct node *treeUnion(struct node* pThis1, struct node *pThis2, struct pq_t* pq_t){
-    struct node *pq, *itr;
-    if (pq_t->cmp(pThis1->key, pThis2->key)>=0)
+    struct node *pq = NULL, *itr = NULL;
+    if (pq_t->cmp(pThis1->key, pThis2->key) >= 0)
     {
         pq = pThis1;
     }
@@ -79,9 +79,16 @@ struct node *treeUnion(struct node* pThis1, struct node *pThis2, struct pq_t* pq
     }
     while (1)
     {
-        if (pq_t->cmp(pThis1->key, pThis2->key)>=0)
+        if (pq_t->cmp(pThis1->key, pThis2->key) >= 0)
         {
-            itr =  pThis1;
+            if (itr == NULL)
+                itr = pThis1;
+            else {
+                itr->right = pThis1;
+                itr->grade = pThis1->grade+1;
+                pThis1->parent = itr;
+                itr = itr->right;
+            }
             if (itr->right == NULL)
             {
                 itr->right = pThis2;
@@ -97,7 +104,14 @@ struct node *treeUnion(struct node* pThis1, struct node *pThis2, struct pq_t* pq
         }
         else
         {
-            itr = pThis2;
+            if (itr == NULL)
+                itr = pThis2;
+            else {
+                itr->right = pThis2;
+                itr->grade = pThis2->grade+1;
+                pThis2->parent = itr;
+                itr = itr->right;
+            }
             if (itr->right == NULL)
             {
                 itr->right = pThis1;
