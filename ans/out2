@@ -1,0 +1,120 @@
+The pq1 needs to be initialized.
+Init step 1. key type: d for double, others for short:
+Init step 2. object type: d for double, others for short:
+Init step 3. Capacity: Initialization done.
+size/capacity: 0/8
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)extract min, 4)max, 5)min,
+                  6)union, 7)change key, 8)get key, 9)empty,
+                  10)switch to another pq, 11)free 2 pqs, 12)quit
+Input a short value for key: Input a short value for obj: size/capacity: 1/8
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)extract min, 4)max, 5)min,
+                  6)union, 7)change key, 8)get key, 9)empty,
+                  10)switch to another pq, 11)free 2 pqs, 12)quit
+Input a short value for key: Input a short value for obj: size/capacity: 2/8
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)extract min, 4)max, 5)min,
+                  6)union, 7)change key, 8)get key, 9)empty,
+                  10)switch to another pq, 11)free 2 pqs, 12)quit
+Input a short value for key: Input a short value for obj: size/capacity: 3/8
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)extract min, 4)max, 5)min,
+                  6)union, 7)change key, 8)get key, 9)empty,
+                  10)switch to another pq, 11)free 2 pqs, 12)quit
+Input a short value for key: Input a short value for obj: size/capacity: 4/8
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)extract min, 4)max, 5)min,
+                  6)union, 7)change key, 8)get key, 9)empty,
+                  10)switch to another pq, 11)free 2 pqs, 12)quit
+Input a short value for key: Input a short value for obj: size/capacity: 5/8
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)extract min, 4)max, 5)min,
+                  6)union, 7)change key, 8)get key, 9)empty,
+                  10)switch to another pq, 11)free 2 pqs, 12)quit
+Input a short value for key: Input a short value for obj: size/capacity: 6/8
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)extract min, 4)max, 5)min,
+                  6)union, 7)change key, 8)get key, 9)empty,
+                  10)switch to another pq, 11)free 2 pqs, 12)quit
+Input a short value for key: Input a short value for obj: size/capacity: 7/8
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)extract min, 4)max, 5)min,
+                  6)union, 7)change key, 8)get key, 9)empty,
+                  10)switch to another pq, 11)free 2 pqs, 12)quit
+The result is <3, 0>.
+size/capacity: 6/8
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)extract min, 4)max, 5)min,
+                  6)union, 7)change key, 8)get key, 9)empty,
+                  10)switch to another pq, 11)free 2 pqs, 12)quit
+The result is <2, 88>.
+size/capacity: 5/8
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)extract min, 4)max, 5)min,
+                  6)union, 7)change key, 8)get key, 9)empty,
+                  10)switch to another pq, 11)free 2 pqs, 12)quit
+Input a short value for key: Input a short value for obj: size/capacity: 6/8
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)extract min, 4)max, 5)min,
+                  6)union, 7)change key, 8)get key, 9)empty,
+                  10)switch to another pq, 11)free 2 pqs, 12)quit
+Input a short value for key: Input a short value for obj: The object 7 is in the pq1 now!
+size/capacity: 6/8
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)extract min, 4)max, 5)min,
+                  6)union, 7)change key, 8)get key, 9)empty,
+                  10)switch to another pq, 11)free 2 pqs, 12)quit
+Input a short value for key: Input a short value for obj: size/capacity: 7/8
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)extract min, 4)max, 5)min,
+                  6)union, 7)change key, 8)get key, 9)empty,
+                  10)switch to another pq, 11)free 2 pqs, 12)quit
+The result is <3, 6>.
+size/capacity: 6/8
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)extract min, 4)max, 5)min,
+                  6)union, 7)change key, 8)get key, 9)empty,
+                  10)switch to another pq, 11)free 2 pqs, 12)quit
+The result is <1, 8>.
+size/capacity: 5/8
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)extract min, 4)max, 5)min,
+                  6)union, 7)change key, 8)get key, 9)empty,
+                  10)switch to another pq, 11)free 2 pqs, 12)quit
+The result is <1, 9>.
+size/capacity: 4/8
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)extract min, 4)max, 5)min,
+                  6)union, 7)change key, 8)get key, 9)empty,
+                  10)switch to another pq, 11)free 2 pqs, 12)quit
+The result is <1, 3>.
+size/capacity: 3/8
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)extract min, 4)max, 5)min,
+                  6)union, 7)change key, 8)get key, 9)empty,
+                  10)switch to another pq, 11)free 2 pqs, 12)quit
+The result is <0, 4>.
+size/capacity: 2/8
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)extract min, 4)max, 5)min,
+                  6)union, 7)change key, 8)get key, 9)empty,
+                  10)switch to another pq, 11)free 2 pqs, 12)quit
+The result is <0, 7>.
+size/capacity: 1/8
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)extract min, 4)max, 5)min,
+                  6)union, 7)change key, 8)get key, 9)empty,
+                  10)switch to another pq, 11)free 2 pqs, 12)quit
+The result is <0, 5>.
+size/capacity: 0/8
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)extract min, 4)max, 5)min,
+                  6)union, 7)change key, 8)get key, 9)empty,
+                  10)switch to another pq, 11)free 2 pqs, 12)quit
+The pq1 is empty!
+size/capacity: 0/8
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)extract min, 4)max, 5)min,
+                  6)union, 7)change key, 8)get key, 9)empty,
+                  10)switch to another pq, 11)free 2 pqs, 12)quit

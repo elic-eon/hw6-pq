@@ -2,5 +2,3 @@
 *.demo
 *.tester
 .DS_Store
-test/
-ans/
