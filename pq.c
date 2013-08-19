@@ -151,6 +151,8 @@ struct node *treeUnion(struct node* pThis1, struct node *pThis2, struct pq_t* pq
     return pq;
 }
 void destory(struct node *root){
+    if (root == NULL)
+        return;
     if (root->left != NULL)
         destory(root->left);
     if (root->right != NULL)
@@ -320,6 +322,7 @@ int pqUnion(struct pq_t *pThis1, struct pq_t *pThis2){
     }
     */
     pThis1->root = treeUnion(pThis1->root, pThis2->root, pThis1);
+    pThis2->root = NULL;
     pThis1->size += pThis2->size;
     return __DS__PQ__NORMAL__;
 
