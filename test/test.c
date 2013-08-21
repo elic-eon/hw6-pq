@@ -11,7 +11,7 @@ int main()
     }
     for (i = 1; i <= n; i++)
     {
-        printf("%d %s", 2, (i%10 == 0)? "\n":"");
+        printf("%d \n", 2);
     }
-    printf("%d\n", 8);
+    printf("\n %d \n", 8);
 }

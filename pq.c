@@ -13,15 +13,14 @@ int doubleGT(const void *a, const void *b);
 struct hm_t;
 
 struct hm_t *hmAlloc();
-int hmInit(struct hm_t *pThis, size_t keySize, size_t valSize);
+int hash(int sz, void *obj);
+int hmInit(struct hm_t *pThis, size_t objSize, size_t valSize);
 int hmFree(struct hm_t *pThis);
-
 int hmSize(struct hm_t *pThis);
-int hmInsert(struct hm_t *pThis, void *pKey, void *pVal);
-int hmDelete(struct hm_t *pThis, void *pKey);
-int hmGet(struct hm_t *pThis, void *pKey, void *pRetVal);
-int hmSet(struct hm_t *pThis, void *pKey, void *pNewVal);
+int hmInsert(struct hm_t *pThis, void *pObj);
+int hmDelete(struct hm_t *pThis, void *pObj);
 int hmKeyExist(struct hm_t *pThis, void *pKey);
+int hmUnion(struct hm_t *pThis1, struct hm_t *pThis2);
 void hmDebug(struct hm_t*);
 /* Hash Map spec end */
 
@@ -204,7 +203,6 @@ int pqInit(struct pq_t *pThis, size_t keySize, size_t objSize, size_t cap, int (
     hmInit(pThis->pObjToIndex, objSize, sizeof(size_t));
     return __DS__PQ__NORMAL__;
 }
-
 int pqFree(struct pq_t *pThis){
     if(pThis->pObjToIndex != NULL)
         hmFree(pThis->pObjToIndex);
@@ -241,13 +239,14 @@ int pqInsert(struct pq_t *pThis, void *pKey, void *pObj){
         return __DS__PQ__OBJ_EXIST__;
     if (pThis->size == 0){
         pThis->root = newNode(pKey, pThis->keySize, pObj, pThis->objSize);
+        hmInsert(pThis->pObjToIndex, pObj);
         pThis->size++;
         return __DS__PQ__NORMAL__;
     }
     struct node * new;
     new =  newNode(pKey, pThis->keySize, pObj, pThis->objSize);
     pThis->root = treeUnion(pThis->root, new, pThis);
-    hmInsert(pThis->pObjToIndex, pObj, &(pThis->size));
+    hmInsert(pThis->pObjToIndex, pObj);
     pThis->size++;
     return __DS__PQ__NORMAL__;
 }
@@ -256,7 +255,7 @@ int pqExtractMax(struct pq_t *pThis, void *pRetKey, void *pRetObj){
         return __DS__PQ__EMPTY__;
     memcpy(pRetKey, pThis->root->key, pThis->keySize);
     memcpy(pRetObj, pThis->root->obj, pThis->objSize);
-    hmDelete(pThis->pObjToIndex, pThis->root);
+    hmDelete(pThis->pObjToIndex, pThis->root->obj);
     struct node *left = pThis->root->left;
     struct node *right = pThis->root->right;
     free(pThis->root->key);
@@ -296,49 +295,30 @@ int pqUnion(struct pq_t *pThis1, struct pq_t *pThis2){
         return __DS__PQ__FULL__;
     while ( pThis1->cap < (pThis1->size+pThis2->size))
         pThis1->cap *= 2;
-    /*
-    size_t size = pThis1->size;
-    size_t i;
-    for(i=0; i<pThis2->size; i++){
-        void *pObj = getAddr(pThis2->objArray, i, pThis2->objSize);
-        size_t newIndex = i+size;
-        if(hmInsert(pThis1->pObjToIndex, pObj, &newIndex)== __DS__HM__KEY_EXIST__){
-            size_t j;
-            for(j=0; j<i; j++){
-                pObj = getAddr(pThis2->objArray, j, pThis2->objSize);
-                hmDelete(pThis1->pObjToIndex, pObj);
-            }
-            return __DS__PQ__OBJ_EXIST__;
-        }
-    }
-    for(i=0; i<pThis2->size; i++){
-        size_t newIndex = i+size;
-        void *pObj = getAddr(pThis2->objArray, i, pThis2->objSize);
-        void *pKey = getAddr(pThis2->keyArray, i, pThis2->keySize);
-        void *pNewObj = getAddr(pThis1->objArray, newIndex, pThis1->objSize);
-        void *pNewKey = getAddr(pThis1->keyArray, newIndex, pThis1->keySize);
-        memcpy(pNewObj, pObj, pThis1->objSize);
-        memcpy(pNewKey, pKey, pThis1->keySize);
-    }
-    */
     pThis1->root = treeUnion(pThis1->root, pThis2->root, pThis1);
     pThis2->root = NULL;
     pThis1->size += pThis2->size;
+    hmUnion(pThis1->pObjToIndex, pThis2->pObjToIndex);
     return __DS__PQ__NORMAL__;
 
 }
 
 /* Very Slow Hash Map Implementation */
-#define MIN_HASH_CAP 8
+#define MIN_HASH_CAP 1024
 struct hm_t{
-    void *keyArray;
-    void *valArray;
-    size_t size, cap, keySize, valSize;
+    struct h_node **objlist;
+    struct h_node **objend;
+    size_t size, objSize;
 };
 
 struct hm_t *hmAlloc(){
     return malloc(sizeof(struct hm_t));
 }
+
+struct h_node{
+    void *obj;
+    struct h_node* next;
+};
 
 /*
 void hmDebug(struct hm_t* pThis){
@@ -356,124 +336,118 @@ void hmDebug(struct hm_t* pThis){
     }
 }
 */
+int hash(int sz, void *obj)
+{
+    short i = *( ((char *)obj) );
+    return (int)(i&(MIN_HASH_CAP-1));
+}
 
-int hmInit(struct hm_t *pThis, size_t keySize, size_t valSize){
+struct h_node *new_h_node(void *obj, size_t size){
+    struct h_node *new = malloc(sizeof(struct h_node));
+    new->obj = malloc(size);
+    memcpy(new->obj, obj, size);
+    new->next = NULL;
+    return new;
+}
+int hmInit(struct hm_t *pThis, size_t objSize, size_t valSize){
     pThis->size = 0;
-    pThis->cap = MIN_HASH_CAP;
-    pThis->keySize = keySize;
-    pThis->valSize = valSize;
-
-    pThis->keyArray = malloc(pThis->keySize*pThis->cap);
-    if(pThis->keyArray == NULL)
-        return __DS__HM__OUT_OF_MEM__;
-    pThis->valArray = malloc(pThis->valSize*pThis->cap);
-    if(pThis->valArray == NULL){
-        free(pThis->keyArray);
+    pThis->objSize = objSize;
+    pThis->objlist = malloc(sizeof(struct h_node *)*MIN_HASH_CAP);
+    pThis->objend = malloc(sizeof(struct h_node *)*MIN_HASH_CAP);
+    if (pThis->objlist == NULL || pThis->objend == NULL)
+    {
         return __DS__HM__OUT_OF_MEM__;
     }
+    int i;
+    for (i = 0; i < MIN_HASH_CAP; i++)
+    {
+        pThis->objlist[i] = NULL;
+        pThis->objend[i] = NULL;
+    }
+    return __DS__HM__NORMAL__;
 }
 int hmFree(struct hm_t *pThis){
-    if(pThis->keyArray)
-        free(pThis->keyArray);
-    if(pThis->valArray)
-        free(pThis->valArray);
+    if (pThis->objlist)
+    {
+        int i;
+        for (i = 0; i < MIN_HASH_CAP; i++)
+        {
+            if (pThis->objlist[i])
+                free(pThis->objlist[i]);
+        }
+        free(pThis->objlist);
+    }
     free(pThis);
 }
 
-int hmExpand(struct hm_t *pThis){
-    if(pThis->size == pThis->cap){
-        pThis->cap = 2*pThis->cap;
-
-        pThis->keyArray = realloc(pThis->keyArray, pThis->keySize*pThis->cap);
-        if(pThis->keyArray == NULL)
-            return __DS__HM__OUT_OF_MEM__;
-        pThis->valArray = realloc(pThis->valArray, pThis->valSize*pThis->cap);
-        if(pThis->valArray == NULL){
-            free(pThis->keyArray);
-            return __DS__HM__OUT_OF_MEM__;
-        }
-    }
-    return __DS__HM__NORMAL__;
-}
-int hmShrink(struct hm_t *pThis){
-    if(pThis->size*4 <= pThis->cap && pThis->size > MIN_HASH_CAP){
-        pThis->cap = pThis->cap/2;
-
-        pThis->keyArray = realloc(pThis->keyArray, pThis->keySize*pThis->cap);
-        if(pThis->keyArray == NULL)
-            return __DS__HM__OUT_OF_MEM__;
-        pThis->valArray = realloc(pThis->valArray, pThis->valSize*pThis->cap);
-        if(pThis->valArray == NULL){
-            free(pThis->keyArray);
-            return __DS__HM__OUT_OF_MEM__;
-        }
-    }
-    return __DS__HM__NORMAL__;
-}
 int hmSize(struct hm_t *pThis){
     return pThis->size;
 }
-int hmInsert(struct hm_t *pThis, void *pKey, void *pVal){
-    if(hmKeyExist(pThis, pKey))
+int hmInsert(struct hm_t *pThis, void *pObj){
+    if(hmKeyExist(pThis, pObj))
         return __DS__HM__KEY_EXIST__;
-    if(pThis->size == pThis->cap)
-        if(hmExpand(pThis) == __DS__HM__OUT_OF_MEM__ )
-            return __DS__HM__OUT_OF_MEM__;
-    memcpy(pThis->keyArray + pThis->size*pThis->keySize, pKey, pThis->keySize);
-    memcpy(pThis->valArray + pThis->size*pThis->valSize, pVal, pThis->valSize);
+    int val = hash(pThis->objSize, pObj);
+    if (pThis->objend[val] == NULL)
+    {
+        pThis->objend[val] = pThis->objlist[val] = new_h_node(pObj, pThis->objSize);
+    }
+    else
+    {
+        pThis->objend[val]->next = new_h_node(pObj, pThis->objSize);
+        pThis->objend[val] = pThis->objend[val]->next;
+    }
     pThis->size++;
     return __DS__HM__NORMAL__;
 }
-int hmFindKey(struct hm_t *pThis, void *pKey){
+int hmDelete(struct hm_t *pThis, void *pObj){
+    int val = hash(pThis->objSize, pObj);
+    struct h_node* itr = pThis->objlist[val];
+    while (1)
+    {
+        if (memcmp(itr->obj, pObj, pThis->size) == 0)
+        {
+            free(itr);
+            itr = NULL;
+            return __DS__HM__NORMAL__;
+        }
+        if (itr->next == NULL)
+            return __DS__HM__KEY_NOT_EXIST__;
+        if (memcmp(itr->next->obj, pObj, pThis->size) == 0)
+        {
+            struct h_node *temp = itr->next;
+            itr->next = itr->next->next;
+            free(temp);
+            return __DS__HM__NORMAL__;
+        }
+        itr = itr->next;
+    }
+
+}
+int hmKeyExist(struct hm_t *pThis, void *pObj){
+    int val = hash(pThis->objSize, pObj);
+    struct h_node* itr = pThis->objlist[val];
+    while (1)
+    {
+        if (itr == NULL)
+            return 0;
+        if (memcmp(itr->obj, pObj, pThis->size) == 0)
+            return 1;
+        if (itr->next == NULL)
+            return 0;
+        if (memcmp(itr->next->obj, pObj, pThis->size == 0))
+            return 1;
+        itr = itr->next;
+    }
+}
+int hmUnion(struct hm_t *pThis1, struct hm_t *pThis2)
+{
     int i;
-    for(i=0; i<pThis->size; i++){
-        void *iter = pThis->keyArray + i*pThis->keySize;
-        if(memcmp(iter, pKey, pThis->keySize) == 0)
-            break;
+    for(i = 0; i < MIN_HASH_CAP; i++)
+    {
+        pThis1->objend[i]->next = pThis2->objlist[i];
+        pThis1->objend[i] = pThis2->objend[i];
     }
-    return i;
-}
-int hmDelete(struct hm_t *pThis, void *pKey){
-    int i = hmFindKey(pThis, pKey);
-    if(i == pThis->size)
-        return __DS__HM__KEY_NOT_EXIST__;
-    if(i != pThis->size-1){
-        void *leftEnd = pThis->keyArray + i*pThis->keySize;
-        void *rightStart = pThis->keyArray + (i+1)*pThis->keySize;
-        size_t rightSize = pThis->keySize*(pThis->size-(i+1));
-        memmove(leftEnd, rightStart, rightSize);
-
-        leftEnd = pThis->valArray + i*pThis->valSize;
-        rightStart = pThis->valArray + (i+1)*pThis->valSize;
-        rightSize = pThis->valSize*(pThis->size-(i+1));
-        memmove(leftEnd, rightStart, rightSize);
-    }
-    pThis->size--;
-    if(pThis->size*4 <= pThis->cap && pThis->size > MIN_HASH_CAP)
-        if(hmShrink(pThis) == __DS__HM__OUT_OF_MEM__ )
-            return __DS__HM__OUT_OF_MEM__;
-
+    pThis2->objlist = pThis2->objend = NULL;
     return __DS__HM__NORMAL__;
-
-}
-int hmGet(struct hm_t *pThis, void *pKey, void *pRetVal){
-    int i = hmFindKey(pThis, pKey);
-    if(i == pThis->size)
-        return __DS__HM__KEY_NOT_EXIST__;
-    memcpy(pRetVal, pThis->valArray + i*pThis->valSize, pThis->valSize);
-    return __DS__HM__NORMAL__;
-}
-int hmSet(struct hm_t *pThis, void *pKey, void *pNewVal){
-    int i = hmFindKey(pThis, pKey);
-    if(i == pThis->size)
-        return __DS__HM__KEY_NOT_EXIST__;
-    memcpy(pThis->valArray + i*pThis->valSize, pNewVal, pThis->valSize);
-    return __DS__HM__NORMAL__;
-}
-int hmKeyExist(struct hm_t *pThis, void *pKey){
-    int i = hmFindKey(pThis, pKey);
-    if(i == pThis->size)
-        return 0;
-    return 1;
 }
 /* Hash Map Implementation End */
