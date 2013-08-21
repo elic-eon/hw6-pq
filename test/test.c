@@ -13,5 +13,5 @@ int main()
     {
         printf("%d %s", 2, (i%10 == 0)? "\n":"");
     }
-    printf("%d\n", 12);
+    printf("%d\n", 8);
 }

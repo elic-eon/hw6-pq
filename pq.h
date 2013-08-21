@@ -15,7 +15,6 @@ struct pq_t;
 /* Priority Queue store various but fixed-size data */
 /* Support <key, object> pair data */
 /* Support customized comparison */
-/* SEPQ(maximum version) for normal, DEPQ for bonus */
 
 /* If it is OOM(out of memory) in the memory allocation, 
  * Please return __DS__PQ__OUT_OF_MEM__ for each function which supports to 
@@ -57,79 +56,45 @@ size_t pqObjSize(struct pq_t *pThis);
 /* Return the size of obj in the priority queue */
 
 int pqEmpty(struct pq_t *pThis);
-/* Return zero if priority queue *pThis is not empty */
+/* Return zero if priority queue is not empty */
 
 int pqInsert(struct pq_t *pThis, void *pKey, void *pObj);
-/* Insert <key, obj> pair into priority queue *pThis
+/* Insert <key, obj> pair into Priority Queue
  * Return __DS__PQ__FULL__ if PQ is full
- * Return __DS__PQ__OBJ_EXIST__ if *pObj is in the PQ now
- * Note: You should implement this in O(logn)-time.
  * Return 0 for normal execution
+ * Note: If *pObj is already in *pThis, you should still insert it.
+ *       As a result, *pThis will have two copies of *pObj.
+ * Performance requirement: O(logn)-time per operation.
  */
 
 int pqExtractMax(struct pq_t *pThis, void *pRetKey, void *pRetObj);
-/* Remove the obj with maximum key in priority queue *pThis
+/* Remove the obj with maximum key in qriority queue
  * Write result to <*pRetKey, *pRetObj>
  * Return __DS__PQ__EMPTY__ if PQ is empty
- * Note: You should implement this in O(logn)-time.
  * Return 0 for normal execution
+ * Performance requirement: O(logn)-time per operation.
  */
 
 int pqMax(struct pq_t *pThis, void *pRetKey, void *pRetObj);
-/* Return the obj with maximum key in priority queue *pThis
+/* Return the obj with maximum key in priority queue
  * Write result to <*pRetKey, *pRetObj>
  * Return __DS__PQ__EMPTY__ if PQ is empty
  * Return 0 for normal execution
- * Note: You should implement this in O(1)-time.
+ * Performance requirement: O(1)-time per operation.
  */
 
 int pqUnion(struct pq_t *pThis1, struct pq_t *pThis2);
-/* Merge two priority queues *pThis1, *pThis2 into *pThis1
- * You may assume *pThis1 and *pThis 2 use the same cmp function
- * Return __DS__PQ__OBJ_EXIST__ if two PQ has same object
+/* Merge two priority queue *pThis1, *pThis2 into *pThis1
+ * use the cmp function of pThis1
+ * you may assume that two PQ doesn't have same object
  * Return __DS__PQ__DIFF_SIZE__ if two PQ has different key/object size
- * Return __DS__PQ__FULL__ if *pThis has not enough space(capacity) in the process of union
+ * Return __DS__PQ__FULL__ if PQ1 is full in the process of union
  * Return 0 for normal execution
- * notice: if the merge failed for some reason except OOM(out of memory), 
+ * notice: If the merge success, please release all the memory alloc by pThis2, that is,
+ *         you don't need to call pqFree(pThis2) after pqUnion(pThis1, pThis2) success.
+ *         If the merge failed for some reason except OOM(out of memory), 
  *         please restore *pThis1, *pThis2 to the state before union.
- * Note: You should implement this in O(logn)-time.
+ * Performance requirement: O(logn)-time per operation.
  */
-
-/* bonus2: DEPQ(Double-Ended Priority Queue) */
-int pqExtractMin(struct pq_t *pThis, void *pRetKey, void *pRetObj);
-/* Remove the obj with minimum key in priority queue *pThis
- * Write result to <*pRetKey, *pRetObj>
- * Return __DS__PQ__EMPTY__ if PQ is empty
- * Return 0 for normal execution
- * Note: You should implement this in O(logn)-time.
- */
-
-int pqMin(struct pq_t *pThis, void *pRetKey, void *pRetObj);
-/* Return the obj with minimum key in priority queue *pThis
- * Write result to <*pRetKey, *pRetObj>
- * Return __DS__PQ__EMPTY__ if PQ is empty
- * Return 0 for normal execution
- * Note: You should implement this in O(1)-time.
- */
-/* bonus2 end */
-
-/* bonus3: change key */
-
-int pqGetKey(struct pq_t *pThis, void *pObj, void *pRetKey);
-/* Write the key of obj *pObj to *pRetKey
- * Return __DS__PQ__OBJ_NOT_EXIST__ if *pObj doesn't exist in the priority queue
- * Return 0 for normal execution
- * Note: You should implement this in O(logn)-time or expected O(1)-time.
- */
-
-int pqChangeKey(struct pq_t *pThis, void *pObj, void *pNewKey);
-/* Change the key of obj *pObj to *pNewKey in the priority queue 
- * Just increasing key in SEPQ(Single-Ended Priority Queue) version
- * So, return __DS__PQ__NON_INCRE__ in SEPQ(Single-Ended Priority Queue) if *pNewKey < origin key
- * Return __DS__PQ__OBJ_NOT_EXIST__ if *pObj doesn't exist in the priority queue
- * Return 0 for normal execution
- * Note: You should implement this in small-o(n)-time. I.e., sublinear time.
- */
-/* bonus3 end */
 
 #endif

@@ -97,10 +97,9 @@ int main()
 			printf("now is in Priority Queue %d:\n", pqChoice);
 			size_t keySize=pqKeySize(now_pq);
 			size_t objSize=pqObjSize(now_pq);
-			printf("Valid operations: 1)insert, 2)extract max, 3)extract min, 4)max, 5)min,\n");
-            printf("                  6)union, 7)change key, 8)get key, 9)empty,\n");
-            printf("                  10)switch to another pq, 11)free 2 pqs, 12)quit\n");
-			for(opChoice=0;opChoice<=0||opChoice>12;sscanf(cmd,"%d",&opChoice))
+			printf("Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,\n");
+            printf("                  6)switch to another pq, 7)free 2 pqs, 8)quit\n");
+			for(opChoice=0;opChoice<=0||opChoice>8;sscanf(cmd,"%d",&opChoice))
 				scanf("%s",cmd);
 			if(opChoice==1)
 			{
@@ -116,12 +115,10 @@ int main()
                     printf(" is in the pq%d now!\n", pqChoice);
                 }
 			}
-			else if(opChoice>=2 && opChoice<=5)
+			else if(opChoice>=2 && opChoice<=3)
 			{
                 if(opChoice == 2) ret=pqExtractMax(now_pq, data1, data2);
-                else if(opChoice == 3) ret=pqExtractMin(now_pq, data1, data2);
-                else if(opChoice == 4) ret=pqMax(now_pq, data1, data2);
-                else if(opChoice == 5) ret=pqMin(now_pq, data1, data2);
+                else if(opChoice == 3) ret=pqMax(now_pq, data1, data2);
                 
                 // printf("pq op!\n");
 				if(!ret)
@@ -135,7 +132,7 @@ int main()
 				else
 					printf("The pq%d is empty!\n", pqChoice);
 			}
-            else if(opChoice==6){
+            else if(opChoice==4){
                 if(p2 == NULL){
                     printf("pq2 is empty. you can't union it.\n");
                 }
@@ -144,69 +141,38 @@ int main()
                     printf("Input 1 for former, else for latter.\n");
                     char cmd2[1024] = {0};
                     int choice;
-                    scanf("%d", cmd2);
+                    scanf("%s", cmd2);
                     choice = (cmd2[0]=='1')?1:2;
                     if(choice == 1){
                         ret = pqUnion(p1, p2);
-                        if(ret == __DS__PQ__NORMAL__)
-                            pqFree(p2);
                     }
                     else{
                         ret = pqUnion(p2, p1);
                         if(ret == __DS__PQ__NORMAL__){
-                            pqFree(p1);
                             p1 = p2;
                         }
                     }
-                    p2 = NULL;
-                    pqChoice = 1;
-                    now_pq = p1;
+                    if(ret == __DS__PQ__NORMAL__){
+                        p2 = NULL;
+                        pqChoice = 1;
+                        now_pq = p1;
+                    }
+                    else if(ret == __DS__PQ__FULL__)
+                        printf("pq1 doesn't have enough place to merge pq2.\n");
+                    else if(ret == __DS__PQ__DIFF_SIZE__)
+                        printf("You can union two different type priority queues.\n");
                 }
             }
-            else if(opChoice==7){
-				printf("Input a %s value for new key: ", keySize==sizeof(double)?"double":"short");
-				getData(keyType, data1);
-				printf("Input a %s value for obj: ", objSize==sizeof(double)?"double":"short");
-				getData(objType, data2);
-                ret = pqChangeKey(now_pq, data2, data1);
-                if(ret == __DS__PQ__OBJ_NOT_EXIST__){
-                    printf("The obj ");
-                    printData(objType, data2);
-                    printf(" isn't in the pq%d.\n", pqChoice);
-                }
-                else if(ret == __DS__PQ__NON_INCRE__){
-                    printf("The new key ");
-                    printData(objType, data1);
-                    printf(" is less than origin key.\n");
-                }
-            }
-            else if(opChoice==8){
-				printf("Input a %s value for object: ", objSize==sizeof(double)?"double":"short");
-				getData(objType, data2);
-                ret = pqGetKey(now_pq, data2, data1);
-                if(ret == __DS__PQ__OBJ_NOT_EXIST__){
-                    printf("The obj ");
-                    printData(objType, data2);
-                    printf(" isn't in the pq%d.\n", pqChoice);
-                }
-                else{
-                    printf("The key of obj ");
-                    printData(objType, data2);
-                    printf(" in pq%d is ", pqChoice);
-                    printData(keyType, data1);
-                    printf(".\n", pqChoice);
-                }
-            }
-			else if(opChoice==9)
+			else if(opChoice==5)
 			{
 				if(pqEmpty(now_pq)) printf("The pq%d is empty.\n", pqChoice);
 				else printf("The pq%d is not empty.\n", pqChoice);
 			}
-            else if(opChoice==10){
+            else if(opChoice==6){
                 pqChoice = (pqChoice==1)?2:1;
                 now_pq = (pqChoice==1)?p1:p2;
             }
-			else if(opChoice==11)
+			else if(opChoice==7)
 			{
                 if(p2 != NULL)
                     pqFree(p2);
