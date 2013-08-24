@@ -1,0 +1,125 @@
+The pq1 needs to be initialized.
+Init step 1. key type: d for double, others for short:
+Init step 2. object type: d for double, others for short:
+Init step 3. Capacity: Initialization done.
+size/capacity: 0/16
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+Input a short value for key: Input a short value for obj: size/capacity: 1/16
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+Input a short value for key: Input a short value for obj: size/capacity: 2/16
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+Input a short value for key: Input a short value for obj: size/capacity: 3/16
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+Input a short value for key: Input a short value for obj: The object 7 is in the pq1 now!
+size/capacity: 3/16
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+The result is <5, 2>.
+size/capacity: 2/16
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+The pq2 needs to be initialized.
+pq2 has same key/object size and cmp as pq1
+Init step 3. Capacity: Initialization done.
+size/capacity: 0/16
+now is in Priority Queue 2:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+Input a short value for key: Input a short value for obj: size/capacity: 1/16
+now is in Priority Queue 2:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+Input a short value for key: Input a short value for obj: size/capacity: 2/16
+now is in Priority Queue 2:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+Input a short value for key: Input a short value for obj: size/capacity: 3/16
+now is in Priority Queue 2:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+Input a short value for key: Input a short value for obj: The object 5 is in the pq2 now!
+size/capacity: 3/16
+now is in Priority Queue 2:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+Input a short value for key: Input a short value for obj: size/capacity: 4/16
+now is in Priority Queue 2:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+Choose you want to union(p1, p2) or union(p2, p1).
+Input 1 for former, else for latter.
+size/capacity: 6/16
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+The result is <10, 4>.
+size/capacity: 5/16
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+The pq2 needs to be initialized.
+pq2 has same key/object size and cmp as pq1
+Init step 3. Capacity: Initialization done.
+size/capacity: 0/16
+now is in Priority Queue 2:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+Input a short value for key: Input a short value for obj: size/capacity: 1/16
+now is in Priority Queue 2:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+Input a short value for key: Input a short value for obj: size/capacity: 2/16
+now is in Priority Queue 2:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+Choose you want to union(p1, p2) or union(p2, p1).
+Input 1 for former, else for latter.
+size/capacity: 7/16
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+The result is <11, 3>.
+size/capacity: 6/16
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+The result is <9, 6>.
+size/capacity: 5/16
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+The result is <8, 10>.
+size/capacity: 4/16
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+The result is <7, 8>.
+size/capacity: 3/16
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+The result is <6, 5>.
+size/capacity: 2/16
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+The result is <3, 1>.
+size/capacity: 1/16
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit
+The result is <1, 7>.
+size/capacity: 0/16
+now is in Priority Queue 1:
+Valid operations: 1)insert, 2)extract max, 3)max, 4)union, 5)empty,
+                  6)switch to another pq, 7)free 2 pqs, 8)quit

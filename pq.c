@@ -14,7 +14,7 @@ struct hm_t;
 
 struct hm_t *hmAlloc();
 int hash(int sz, void *obj);
-int hmInit(struct hm_t *pThis, size_t objSize, size_t valSize);
+int hmInit(struct hm_t *pThis, size_t objSize);
 int hmFree(struct hm_t *pThis);
 int hmSize(struct hm_t *pThis);
 int hmInsert(struct hm_t *pThis, void *pObj);
@@ -160,6 +160,7 @@ void destory(struct node *root){
     free(root->obj);
     free(root);
 }
+/*node opearend end*/
 /*
 void pqDebug(struct pq_t* pThis){
     printf("size/cap: %zu/%zu\nkey,obj size: %zu, %zu\n", pThis->size, pThis->cap, pThis->keySize, pThis->objSize);
@@ -198,14 +199,14 @@ int pqInit(struct pq_t *pThis, size_t keySize, size_t objSize, size_t cap, int (
     pThis->keySize = keySize;
     pThis->objSize = objSize;
     pThis->size = 0;
-    pThis->pObjToIndex = hmAlloc();
+    /*pThis->pObjToIndex = hmAlloc();*/
     pThis->cmp = cmp;
-    hmInit(pThis->pObjToIndex, objSize, sizeof(size_t));
+    /*hmInit(pThis->pObjToIndex, objSize);*/
     return __DS__PQ__NORMAL__;
 }
 int pqFree(struct pq_t *pThis){
-    if(pThis->pObjToIndex != NULL)
-        hmFree(pThis->pObjToIndex);
+    /*if(pThis->pObjToIndex != NULL)*/
+        /*hmFree(pThis->pObjToIndex);*/
     if (pThis->root != NULL)
         destory(pThis->root);
     free(pThis);
@@ -235,18 +236,18 @@ int pqInsert(struct pq_t *pThis, void *pKey, void *pObj){
         else
             return __DS__PQ__FULL__;
     }
-    if(hmKeyExist(pThis->pObjToIndex, pObj))
-        return __DS__PQ__OBJ_EXIST__;
+    /*if(hmKeyExist(pThis->pObjToIndex, pObj))*/
+        /*return __DS__PQ__OBJ_EXIST__;*/
     if (pThis->size == 0){
         pThis->root = newNode(pKey, pThis->keySize, pObj, pThis->objSize);
-        hmInsert(pThis->pObjToIndex, pObj);
+        /*hmInsert(pThis->pObjToIndex, pObj);*/
         pThis->size++;
         return __DS__PQ__NORMAL__;
     }
     struct node * new;
     new =  newNode(pKey, pThis->keySize, pObj, pThis->objSize);
     pThis->root = treeUnion(pThis->root, new, pThis);
-    hmInsert(pThis->pObjToIndex, pObj);
+    /*hmInsert(pThis->pObjToIndex, pObj);*/
     pThis->size++;
     return __DS__PQ__NORMAL__;
 }
@@ -255,7 +256,7 @@ int pqExtractMax(struct pq_t *pThis, void *pRetKey, void *pRetObj){
         return __DS__PQ__EMPTY__;
     memcpy(pRetKey, pThis->root->key, pThis->keySize);
     memcpy(pRetObj, pThis->root->obj, pThis->objSize);
-    hmDelete(pThis->pObjToIndex, pThis->root->obj);
+    /*hmDelete(pThis->pObjToIndex, pThis->root->obj);*/
     struct node *left = pThis->root->left;
     struct node *right = pThis->root->right;
     free(pThis->root->key);
@@ -298,7 +299,7 @@ int pqUnion(struct pq_t *pThis1, struct pq_t *pThis2){
     pThis1->root = treeUnion(pThis1->root, pThis2->root, pThis1);
     pThis2->root = NULL;
     pThis1->size += pThis2->size;
-    hmUnion(pThis1->pObjToIndex, pThis2->pObjToIndex);
+    /*hmUnion(pThis1->pObjToIndex, pThis2->pObjToIndex);*/
     return __DS__PQ__NORMAL__;
 
 }
@@ -349,7 +350,7 @@ struct h_node *new_h_node(void *obj, size_t size){
     new->next = NULL;
     return new;
 }
-int hmInit(struct hm_t *pThis, size_t objSize, size_t valSize){
+int hmInit(struct hm_t *pThis, size_t objSize){
     pThis->size = 0;
     pThis->objSize = objSize;
     pThis->objlist = malloc(sizeof(struct h_node *)*MIN_HASH_CAP);
@@ -444,8 +445,18 @@ int hmUnion(struct hm_t *pThis1, struct hm_t *pThis2)
     int i;
     for(i = 0; i < MIN_HASH_CAP; i++)
     {
-        pThis1->objend[i]->next = pThis2->objlist[i];
-        pThis1->objend[i] = pThis2->objend[i];
+        if (pThis1->objend[i] != NULL || pThis2->objlist[i] != NULL)
+        {
+            if (pThis1->objend[i] == NULL)
+            {
+                pThis1->objlist[i] = pThis2->objlist[i];
+                pThis1->objend[i] = pThis2->objend[i];
+            }
+            if (pThis2->objlist[i] == NULL)
+                continue;
+            pThis1->objend[i]->next = pThis2->objlist[i];
+            pThis1->objend[i] = pThis2->objend[i];
+        }
     }
     pThis2->objlist = pThis2->objend = NULL;
     return __DS__HM__NORMAL__;
